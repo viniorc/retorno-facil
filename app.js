@@ -225,19 +225,61 @@ function getTodayStart() {
   return today;
 }
 
-function calculateMetrics(allClients) {
+function getClientAlertType(client) {
+  if (client.status === "concluido") {
+    return "normal";
+  }
+
+  const returnDate = createDateFromInput(client.returnDate);
+
+  if (!returnDate) {
+    return "normal";
+  }
+
   const todayStart = getTodayStart();
 
+  if (returnDate < todayStart) {
+    return "atrasado";
+  }
+
+  if (returnDate.getTime() === todayStart.getTime()) {
+    return "hoje";
+  }
+
+  return "normal";
+}
+
+function calculateMetrics(allClients) {
   return {
     totalClients: allClients.length,
     waitingReturn: allClients.filter((client) => client.status === "aguardando-retorno").length,
     completed: allClients.filter((client) => client.status === "concluido").length,
-    overdueReturns: allClients.filter((client) => {
-      const returnDate = createDateFromInput(client.returnDate);
-
-      return Boolean(returnDate) && returnDate < todayStart && client.status !== "concluido";
-    }).length,
+    overdueReturns: allClients.filter((client) => getClientAlertType(client) === "atrasado").length,
   };
+}
+
+function getAlertLabel(alertType) {
+  if (alertType === "atrasado") {
+    return "Retorno atrasado";
+  }
+
+  if (alertType === "hoje") {
+    return "Retorno hoje";
+  }
+
+  return "";
+}
+
+function getAlertClass(alertType) {
+  if (alertType === "atrasado") {
+    return "client-card--overdue";
+  }
+
+  if (alertType === "hoje") {
+    return "client-card--today";
+  }
+
+  return "";
 }
 
 function renderMetrics() {
@@ -378,6 +420,12 @@ function renderClients() {
     .map((client) => {
       const whatsappLink = createWhatsappLink(client.phone);
       const safeClientId = escapeHtml(client.id);
+      const alertType = getClientAlertType(client);
+      const alertLabel = getAlertLabel(alertType);
+      const alertClass = getAlertClass(alertType);
+      const alertBadge = alertLabel
+        ? `<span class="client-alert-badge client-alert-badge--${alertType}">${escapeHtml(alertLabel)}</span>`
+        : "";
       const whatsappButton = whatsappLink
         ? `
           <a
@@ -392,9 +440,12 @@ function renderClients() {
         : "";
 
       return `
-        <article class="client-card">
+        <article class="client-card ${alertClass}">
           <div class="client-card-header">
-            <h3 class="client-card-title">${escapeHtml(client.name)}</h3>
+            <div class="client-card-title-group">
+              <h3 class="client-card-title">${escapeHtml(client.name)}</h3>
+              ${alertBadge}
+            </div>
             <span class="client-card-status">${escapeHtml(formatStatus(client.status))}</span>
           </div>
           <div class="client-card-info">
