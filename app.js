@@ -1,11 +1,17 @@
 const STORAGE_KEY = "retorno-facil-clientes";
 
 const form = document.querySelector("#client-form");
+const submitButton = document.querySelector("#submit-button");
+const cancelEditButton = document.querySelector("#cancel-edit-button");
 const clientList = document.querySelector("#client-list");
 const emptyState = document.querySelector("#empty-state");
 const statusFilter = document.querySelector("#status-filter");
 
-let clients = loadClients();
+let editingClientId = null;
+let clients = ensureClientIds(loadClients());
+
+saveClients(clients);
+renderClients();
 
 function loadClients() {
   const storedClients = window.localStorage.getItem(STORAGE_KEY);
@@ -25,6 +31,29 @@ function loadClients() {
 
 function saveClients(updatedClients) {
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedClients));
+}
+
+function createClientId() {
+  return `cliente-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
+}
+
+function ensureClientIds(allClients) {
+  let hasChanges = false;
+
+  const normalizedClients = allClients.map((client) => {
+    if (client.id) {
+      return client;
+    }
+
+    hasChanges = true;
+
+    return {
+      ...client,
+      id: createClientId(),
+    };
+  });
+
+  return hasChanges ? normalizedClients : allClients;
 }
 
 function formatStatus(status) {
@@ -75,6 +104,16 @@ function normalizeWhatsappPhone(phone) {
   return `55${digits}`;
 }
 
+function createWhatsappLink(phone) {
+  const normalizedPhone = normalizeWhatsappPhone(phone);
+
+  if (!normalizedPhone) {
+    return "";
+  }
+
+  return `https://wa.me/${normalizedPhone}`;
+}
+
 function createInfoRow(label, value) {
   return `
     <div class="client-card-row">
@@ -108,14 +147,94 @@ function getEmptyStateMessage(filter) {
   return "Nenhum cliente encontrado para o filtro selecionado.";
 }
 
-function createWhatsappLink(phone) {
-  const normalizedPhone = normalizeWhatsappPhone(phone);
-
-  if (!normalizedPhone) {
-    return "";
+function updateFormMode() {
+  if (!submitButton || !cancelEditButton) {
+    return;
   }
 
-  return `https://wa.me/${normalizedPhone}`;
+  const isEditing = Boolean(editingClientId);
+
+  submitButton.textContent = isEditing ? "Atualizar cliente" : "Salvar cliente";
+  cancelEditButton.classList.toggle("is-hidden", !isEditing);
+}
+
+function resetForm() {
+  if (!form) {
+    return;
+  }
+
+  form.reset();
+}
+
+function exitEditMode() {
+  editingClientId = null;
+  resetForm();
+  updateFormMode();
+}
+
+function findClientById(clientId) {
+  return clients.find((client) => client.id === clientId) || null;
+}
+
+function fillFormWithClient(client) {
+  if (!form || !client) {
+    return;
+  }
+
+  form.elements.nome.value = client.name;
+  form.elements.telefone.value = client.phone;
+  form.elements.observacao.value = client.notes;
+  form.elements.status.value = client.status;
+  form.elements["proximo-retorno"].value = client.returnDate;
+}
+
+function enterEditMode(clientId) {
+  const client = findClientById(clientId);
+
+  if (!client) {
+    return;
+  }
+
+  editingClientId = client.id;
+  fillFormWithClient(client);
+  updateFormMode();
+}
+
+function getClientFromForm() {
+  if (!form) {
+    return null;
+  }
+
+  const formData = new FormData(form);
+
+  return {
+    name: String(formData.get("nome") || "").trim(),
+    phone: String(formData.get("telefone") || "").trim(),
+    notes: String(formData.get("observacao") || "").trim(),
+    status: String(formData.get("status") || "").trim(),
+    returnDate: String(formData.get("proximo-retorno") || "").trim(),
+  };
+}
+
+function persistAndRender() {
+  saveClients(clients);
+  renderClients();
+}
+
+function removeClient(clientId) {
+  const shouldRemove = window.confirm("Deseja remover este cliente?");
+
+  if (!shouldRemove) {
+    return;
+  }
+
+  clients = clients.filter((client) => client.id !== clientId);
+
+  if (editingClientId === clientId) {
+    exitEditMode();
+  }
+
+  persistAndRender();
 }
 
 function renderClients() {
@@ -138,6 +257,7 @@ function renderClients() {
   clientList.innerHTML = visibleClients
     .map((client) => {
       const whatsappLink = createWhatsappLink(client.phone);
+      const safeClientId = escapeHtml(client.id);
       const whatsappButton = whatsappLink
         ? `
           <a
@@ -162,53 +282,90 @@ function renderClients() {
             ${createInfoRow("Observacao", client.notes)}
             ${createInfoRow("Proximo retorno", formatDate(client.returnDate))}
           </div>
-          ${whatsappButton}
+          <div class="client-card-actions">
+            ${whatsappButton}
+            <button class="card-action-button" type="button" data-action="edit" data-client-id="${safeClientId}">
+              Editar
+            </button>
+            <button
+              class="card-action-button remove-button"
+              type="button"
+              data-action="remove"
+              data-client-id="${safeClientId}"
+            >
+              Remover
+            </button>
+          </div>
         </article>
       `;
     })
     .join("");
 }
 
-function getClientFromForm() {
-  if (!form) {
-    return null;
-  }
-
-  const formData = new FormData(form);
-
-  return {
-    name: String(formData.get("nome") || "").trim(),
-    phone: String(formData.get("telefone") || "").trim(),
-    notes: String(formData.get("observacao") || "").trim(),
-    status: String(formData.get("status") || "").trim(),
-    returnDate: String(formData.get("proximo-retorno") || "").trim(),
-  };
-}
-
-function resetForm() {
-  if (!form) {
-    return;
-  }
-
-  form.reset();
-}
-
-renderClients();
-
 if (form) {
   form.addEventListener("submit", (event) => {
     event.preventDefault();
 
-    const newClient = getClientFromForm();
+    const formClient = getClientFromForm();
 
-    if (!newClient) {
+    if (!formClient) {
       return;
     }
 
-    clients = [newClient, ...clients];
-    saveClients(clients);
-    renderClients();
-    resetForm();
+    if (editingClientId) {
+      clients = clients.map((client) => {
+        if (client.id !== editingClientId) {
+          return client;
+        }
+
+        return {
+          ...client,
+          ...formClient,
+        };
+      });
+    } else {
+      clients = [
+        {
+          id: createClientId(),
+          ...formClient,
+        },
+        ...clients,
+      ];
+    }
+
+    persistAndRender();
+    exitEditMode();
+  });
+}
+
+if (cancelEditButton) {
+  cancelEditButton.addEventListener("click", () => {
+    exitEditMode();
+  });
+}
+
+if (clientList) {
+  clientList.addEventListener("click", (event) => {
+    const actionButton = event.target.closest("[data-action]");
+
+    if (!actionButton) {
+      return;
+    }
+
+    const clientId = actionButton.getAttribute("data-client-id");
+    const action = actionButton.getAttribute("data-action");
+
+    if (!clientId || !action) {
+      return;
+    }
+
+    if (action === "edit") {
+      enterEditMode(clientId);
+    }
+
+    if (action === "remove") {
+      removeClient(clientId);
+    }
   });
 }
 
@@ -217,3 +374,5 @@ if (statusFilter) {
     renderClients();
   });
 }
+
+updateFormMode();

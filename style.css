@@ -149,6 +149,47 @@ select:focus {
   transform: translateY(-1px);
 }
 
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.secondary-button,
+.card-action-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 16px;
+  font: inherit;
+  font-weight: 700;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.secondary-button {
+  color: var(--text);
+  background: #f3eadf;
+  border: 1px solid #d7cabb;
+}
+
+.secondary-button:hover,
+.secondary-button:focus-visible,
+.card-action-button:hover,
+.card-action-button:focus-visible {
+  transform: translateY(-1px);
+}
+
+.secondary-button:hover,
+.secondary-button:focus-visible {
+  background: #eadcc9;
+}
+
+.is-hidden {
+  display: none;
+}
+
 .clients-panel {
   background: linear-gradient(180deg, #ffffff 0%, #fffdf9 100%);
 }
@@ -232,6 +273,34 @@ select:focus {
   line-height: 1.5;
 }
 
+.client-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.card-action-button {
+  color: var(--text);
+  background: #f3eadf;
+  border: 1px solid #d7cabb;
+}
+
+.card-action-button:hover,
+.card-action-button:focus-visible {
+  background: #eadcc9;
+}
+
+.remove-button {
+  color: #8b1e1e;
+  background: #fdeeee;
+  border-color: #efc7c7;
+}
+
+.remove-button:hover,
+.remove-button:focus-visible {
+  background: #f8d9d9;
+}
+
 .whatsapp-button {
   display: inline-flex;
   align-items: center;
@@ -269,7 +338,15 @@ select:focus {
     width: 100%;
   }
 
+  .form-actions {
+    flex-direction: column;
+  }
+
   .client-card-header {
     flex-direction: column;
+  }
+
+  .client-card-actions > * {
+    width: 100%;
   }
 }
