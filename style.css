@@ -194,9 +194,16 @@ select:focus {
   background: linear-gradient(180deg, #ffffff 0%, #fffdf9 100%);
 }
 
-.filter-field {
-  max-width: 280px;
+.list-controls {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
   margin-bottom: 18px;
+}
+
+.filter-field {
+  display: grid;
+  gap: 8px;
 }
 
 .empty-state {
@@ -331,6 +338,10 @@ select:focus {
   }
 
   .field-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .list-controls {
     grid-template-columns: 1fr;
   }
 
