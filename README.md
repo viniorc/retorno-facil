@@ -6,7 +6,7 @@ Mini sistema para organizar clientes e retornos de atendimento pelo WhatsApp.
 Ajudar pequenos negócios a cadastrar clientes, acompanhar o status do atendimento e lembrar quem precisa de retorno.
 
 ## Versão atual
-Versão funcional mínima com cadastro, listagem, filtro por status, busca, ordenação, botão de WhatsApp, edição e remoção de clientes, mantendo persistência local no navegador.
+Versão funcional mínima com cadastro, listagem, dashboard de métricas, filtro por status, busca, ordenação, botão de WhatsApp, edição e remoção de clientes, mantendo persistência local no navegador.
 
 ## Tecnologias
 - HTML
@@ -18,6 +18,7 @@ Versão funcional mínima com cadastro, listagem, filtro por status, busca, orde
 - salva nome, telefone, observação, status e data do próximo retorno
 - lista os clientes logo após o salvamento
 - mantém os dados no navegador com localStorage
+- exibe métricas gerais com base em todos os clientes salvos
 - filtra os clientes por status
 - busca clientes por nome ou telefone
 - ordena a lista por nome e por data de retorno
