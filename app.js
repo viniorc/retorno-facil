@@ -6,6 +6,8 @@ const cancelEditButton = document.querySelector("#cancel-edit-button");
 const clientList = document.querySelector("#client-list");
 const emptyState = document.querySelector("#empty-state");
 const statusFilter = document.querySelector("#status-filter");
+const searchInput = document.querySelector("#search-input");
+const sortOrder = document.querySelector("#sort-order");
 
 let editingClientId = null;
 let clients = ensureClientIds(loadClients());
@@ -114,6 +116,14 @@ function createWhatsappLink(phone) {
   return `https://wa.me/${normalizedPhone}`;
 }
 
+function normalizeText(value) {
+  return String(value).trim().toLowerCase();
+}
+
+function normalizeDigits(value) {
+  return String(value).replace(/\D/g, "");
+}
+
 function createInfoRow(label, value) {
   return `
     <div class="client-card-row">
@@ -124,11 +134,15 @@ function createInfoRow(label, value) {
 }
 
 function getCurrentFilter() {
-  if (!statusFilter) {
-    return "todos";
-  }
+  return statusFilter ? statusFilter.value : "todos";
+}
 
-  return statusFilter.value;
+function getSearchTerm() {
+  return searchInput ? normalizeText(searchInput.value) : "";
+}
+
+function getSortOrder() {
+  return sortOrder ? sortOrder.value : "padrao";
 }
 
 function filterClientsByStatus(allClients, filter) {
@@ -139,12 +153,69 @@ function filterClientsByStatus(allClients, filter) {
   return allClients.filter((client) => client.status === filter);
 }
 
-function getEmptyStateMessage(filter) {
-  if (filter === "todos") {
+function filterClientsBySearch(allClients, searchTerm) {
+  if (!searchTerm) {
+    return allClients;
+  }
+
+  const digitsTerm = normalizeDigits(searchTerm);
+
+  return allClients.filter((client) => {
+    const nameMatches = normalizeText(client.name).includes(searchTerm);
+    const phoneMatches = digitsTerm
+      ? normalizeDigits(client.phone).includes(digitsTerm)
+      : normalizeText(client.phone).includes(searchTerm);
+
+    return nameMatches || phoneMatches;
+  });
+}
+
+function getReturnTimestamp(date) {
+  if (!date) {
+    return Number.POSITIVE_INFINITY;
+  }
+
+  const timestamp = new Date(date).getTime();
+  return Number.isNaN(timestamp) ? Number.POSITIVE_INFINITY : timestamp;
+}
+
+function sortClients(allClients, currentSortOrder) {
+  const sortedClients = [...allClients];
+
+  if (currentSortOrder === "nome-a-z") {
+    sortedClients.sort((firstClient, secondClient) => {
+      return firstClient.name.localeCompare(secondClient.name, "pt-BR");
+    });
+  }
+
+  if (currentSortOrder === "retorno-mais-proximo") {
+    sortedClients.sort((firstClient, secondClient) => {
+      return getReturnTimestamp(firstClient.returnDate) - getReturnTimestamp(secondClient.returnDate);
+    });
+  }
+
+  if (currentSortOrder === "retorno-mais-distante") {
+    sortedClients.sort((firstClient, secondClient) => {
+      return getReturnTimestamp(secondClient.returnDate) - getReturnTimestamp(firstClient.returnDate);
+    });
+  }
+
+  return sortedClients;
+}
+
+function getVisibleClients() {
+  const filteredByStatus = filterClientsByStatus(clients, getCurrentFilter());
+  const filteredBySearch = filterClientsBySearch(filteredByStatus, getSearchTerm());
+
+  return sortClients(filteredBySearch, getSortOrder());
+}
+
+function getEmptyStateMessage() {
+  if (clients.length === 0) {
     return "Ainda nao ha clientes cadastrados.";
   }
 
-  return "Nenhum cliente encontrado para o filtro selecionado.";
+  return "Nenhum cliente encontrado com os filtros atuais.";
 }
 
 function updateFormMode() {
@@ -242,12 +313,11 @@ function renderClients() {
     return;
   }
 
-  const currentFilter = getCurrentFilter();
-  const visibleClients = filterClientsByStatus(clients, currentFilter);
+  const visibleClients = getVisibleClients();
 
   if (visibleClients.length === 0) {
     clientList.innerHTML = "";
-    emptyState.textContent = getEmptyStateMessage(currentFilter);
+    emptyState.textContent = getEmptyStateMessage();
     emptyState.classList.remove("is-hidden");
     return;
   }
@@ -371,6 +441,18 @@ if (clientList) {
 
 if (statusFilter) {
   statusFilter.addEventListener("change", () => {
+    renderClients();
+  });
+}
+
+if (searchInput) {
+  searchInput.addEventListener("input", () => {
+    renderClients();
+  });
+}
+
+if (sortOrder) {
+  sortOrder.addEventListener("change", () => {
     renderClients();
   });
 }
