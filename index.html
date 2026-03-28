@@ -77,15 +77,32 @@
         <p>Esta área já está pronta para receber a futura listagem de clientes.</p>
       </div>
 
-      <div class="filter-field">
-        <label for="status-filter">Filtrar por status</label>
-        <select id="status-filter" name="status-filter">
-          <option value="todos" selected>Todos</option>
-          <option value="novo">Novo</option>
-          <option value="em-atendimento">Em atendimento</option>
-          <option value="aguardando-retorno">Aguardando retorno</option>
-          <option value="concluido">Concluído</option>
-        </select>
+      <div class="list-controls">
+        <div class="filter-field">
+          <label for="status-filter">Filtrar por status</label>
+          <select id="status-filter" name="status-filter">
+            <option value="todos" selected>Todos</option>
+            <option value="novo">Novo</option>
+            <option value="em-atendimento">Em atendimento</option>
+            <option value="aguardando-retorno">Aguardando retorno</option>
+            <option value="concluido">Concluído</option>
+          </select>
+        </div>
+
+        <div class="filter-field">
+          <label for="search-input">Buscar cliente</label>
+          <input id="search-input" name="search-input" type="search" placeholder="Buscar por nome ou telefone" />
+        </div>
+
+        <div class="filter-field">
+          <label for="sort-order">Ordenar por</label>
+          <select id="sort-order" name="sort-order">
+            <option value="padrao" selected>Padrão</option>
+            <option value="nome-a-z">Nome A-Z</option>
+            <option value="retorno-mais-proximo">Retorno mais próximo</option>
+            <option value="retorno-mais-distante">Retorno mais distante</option>
+          </select>
+        </div>
       </div>
 
       <p class="empty-state" id="empty-state" aria-live="polite">
