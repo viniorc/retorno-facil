@@ -7,13 +7,76 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <main class="container">
-    <h1>Retorno Fácil</h1>
-    <p class="subtitle">Organize clientes e retornos de atendimento pelo WhatsApp</p>
+  <main class="page">
+    <section class="hero">
+      <p class="eyebrow">Retorno Fácil</p>
+      <h1>Organize clientes e retornos de atendimento</h1>
+      <p class="subtitle">
+        Uma primeira interface para cadastrar clientes e preparar a futura área de acompanhamento.
+      </p>
+    </section>
 
-    <section class="card">
-      <h2>Projeto em construção</h2>
-      <p>Este projeto será desenvolvido com ajuda do Codex.</p>
+    <section class="panel" aria-labelledby="novo-cliente">
+      <div class="section-header">
+        <h2 id="novo-cliente">Novo cliente</h2>
+        <p>Preencha os dados abaixo para registrar um atendimento.</p>
+      </div>
+
+      <form class="client-form">
+        <div class="field-grid">
+          <div class="field">
+            <label for="nome">Nome do cliente</label>
+            <input id="nome" name="nome" type="text" placeholder="Ex: Maria Silva" required />
+          </div>
+
+          <div class="field">
+            <label for="telefone">Telefone</label>
+            <input id="telefone" name="telefone" type="tel" placeholder="Ex: (85) 99999-9999" required />
+          </div>
+
+          <div class="field field-full">
+            <label for="observacao">Observação</label>
+            <textarea
+              id="observacao"
+              name="observacao"
+              rows="4"
+              placeholder="Descreva a necessidade do cliente"
+              required
+            ></textarea>
+          </div>
+
+          <div class="field">
+            <label for="status">Status do atendimento</label>
+            <select id="status" name="status" required>
+              <option value="" selected disabled>Selecione o status</option>
+              <option value="novo">Novo</option>
+              <option value="em-atendimento">Em atendimento</option>
+              <option value="aguardando-retorno">Aguardando retorno</option>
+              <option value="concluido">Concluído</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="proximo-retorno">Data do próximo retorno</label>
+            <input id="proximo-retorno" name="proximo-retorno" type="date" required />
+          </div>
+        </div>
+
+        <button class="submit-button" type="submit">Salvar cliente</button>
+      </form>
+    </section>
+
+    <section class="panel clients-panel" aria-labelledby="clientes-cadastrados">
+      <div class="section-header">
+        <h2 id="clientes-cadastrados">Clientes cadastrados</h2>
+        <p>Esta área já está pronta para receber a futura listagem de clientes.</p>
+      </div>
+
+      <p class="empty-state" id="empty-state" aria-live="polite">
+        Ainda não há clientes cadastrados.
+      </p>
+
+      <div class="client-list" aria-label="Lista de clientes cadastrados"></div>
     </section>
   </main>
 

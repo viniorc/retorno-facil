@@ -6,21 +6,24 @@ Mini sistema para organizar clientes e retornos de atendimento pelo WhatsApp.
 Ajudar pequenos negócios a cadastrar clientes, acompanhar o status do atendimento e lembrar quem precisa de retorno.
 
 ## Versão atual
-Protótipo inicial para estudo com Codex e GitHub.
+Primeira interface visual do projeto, com formulário de cadastro e estrutura inicial da lista de clientes.
 
 ## Tecnologias
 - HTML
 - CSS
 - JavaScript puro
 
-## Funcionalidades esperadas da primeira versão
-- cadastrar cliente
-- salvar telefone
-- salvar observação
-- escolher status
-- informar data de retorno
+## O que esta versão já mostra
+- formulário visível para cadastro de cliente
+- campos para nome, telefone, observação, status e data do próximo retorno
+- botão para salvar cliente
+- seção "Clientes cadastrados"
+- mensagem temporária para o estado inicial vazio
+
+## Próximos passos
+- salvar clientes de verdade
 - listar clientes na tela
 - abrir conversa no WhatsApp
 
 ## Observação
-Este projeto está sendo desenvolvido como treinamento prático de uso do Codex, Git e GitHub, com foco em fluxo profissional de trabalho.
+Este projeto continua sendo desenvolvido como treino prático de uso do Codex, Git e GitHub, com foco em fluxo profissional de trabalho.
