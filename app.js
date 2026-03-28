@@ -8,12 +8,16 @@ const emptyState = document.querySelector("#empty-state");
 const statusFilter = document.querySelector("#status-filter");
 const searchInput = document.querySelector("#search-input");
 const sortOrder = document.querySelector("#sort-order");
+const totalClientsValue = document.querySelector("#metric-total-clientes");
+const waitingReturnValue = document.querySelector("#metric-aguardando-retorno");
+const completedValue = document.querySelector("#metric-concluidos");
+const overdueReturnsValue = document.querySelector("#metric-retornos-atrasados");
 
 let editingClientId = null;
 let clients = ensureClientIds(loadClients());
 
 saveClients(clients);
-renderClients();
+renderApp();
 
 function loadClients() {
   const storedClients = window.localStorage.getItem(STORAGE_KEY);
@@ -170,13 +174,18 @@ function filterClientsBySearch(allClients, searchTerm) {
   });
 }
 
-function getReturnTimestamp(date) {
+function createDateFromInput(date) {
   if (!date) {
-    return Number.POSITIVE_INFINITY;
+    return null;
   }
 
-  const timestamp = new Date(date).getTime();
-  return Number.isNaN(timestamp) ? Number.POSITIVE_INFINITY : timestamp;
+  const parsedDate = new Date(`${date}T00:00:00`);
+  return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
+}
+
+function getReturnTimestamp(date) {
+  const parsedDate = createDateFromInput(date);
+  return parsedDate ? parsedDate.getTime() : Number.POSITIVE_INFINITY;
 }
 
 function sortClients(allClients, currentSortOrder) {
@@ -208,6 +217,47 @@ function getVisibleClients() {
   const filteredBySearch = filterClientsBySearch(filteredByStatus, getSearchTerm());
 
   return sortClients(filteredBySearch, getSortOrder());
+}
+
+function getTodayStart() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return today;
+}
+
+function calculateMetrics(allClients) {
+  const todayStart = getTodayStart();
+
+  return {
+    totalClients: allClients.length,
+    waitingReturn: allClients.filter((client) => client.status === "aguardando-retorno").length,
+    completed: allClients.filter((client) => client.status === "concluido").length,
+    overdueReturns: allClients.filter((client) => {
+      const returnDate = createDateFromInput(client.returnDate);
+
+      return Boolean(returnDate) && returnDate < todayStart && client.status !== "concluido";
+    }).length,
+  };
+}
+
+function renderMetrics() {
+  const metrics = calculateMetrics(clients);
+
+  if (totalClientsValue) {
+    totalClientsValue.textContent = String(metrics.totalClients);
+  }
+
+  if (waitingReturnValue) {
+    waitingReturnValue.textContent = String(metrics.waitingReturn);
+  }
+
+  if (completedValue) {
+    completedValue.textContent = String(metrics.completed);
+  }
+
+  if (overdueReturnsValue) {
+    overdueReturnsValue.textContent = String(metrics.overdueReturns);
+  }
 }
 
 function getEmptyStateMessage() {
@@ -289,7 +339,7 @@ function getClientFromForm() {
 
 function persistAndRender() {
   saveClients(clients);
-  renderClients();
+  renderApp();
 }
 
 function removeClient(clientId) {
@@ -372,6 +422,11 @@ function renderClients() {
     .join("");
 }
 
+function renderApp() {
+  renderMetrics();
+  renderClients();
+}
+
 if (form) {
   form.addEventListener("submit", (event) => {
     event.preventDefault();
@@ -441,19 +496,19 @@ if (clientList) {
 
 if (statusFilter) {
   statusFilter.addEventListener("change", () => {
-    renderClients();
+    renderApp();
   });
 }
 
 if (searchInput) {
   searchInput.addEventListener("input", () => {
-    renderClients();
+    renderApp();
   });
 }
 
 if (sortOrder) {
   sortOrder.addEventListener("change", () => {
-    renderClients();
+    renderApp();
   });
 }
 
