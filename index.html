@@ -72,6 +72,17 @@
         <p>Esta área já está pronta para receber a futura listagem de clientes.</p>
       </div>
 
+      <div class="filter-field">
+        <label for="status-filter">Filtrar por status</label>
+        <select id="status-filter" name="status-filter">
+          <option value="todos" selected>Todos</option>
+          <option value="novo">Novo</option>
+          <option value="em-atendimento">Em atendimento</option>
+          <option value="aguardando-retorno">Aguardando retorno</option>
+          <option value="concluido">Concluído</option>
+        </select>
+      </div>
+
       <p class="empty-state" id="empty-state" aria-live="polite">
         Ainda não há clientes cadastrados.
       </p>

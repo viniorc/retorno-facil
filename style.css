@@ -153,6 +153,11 @@ select:focus {
   background: linear-gradient(180deg, #ffffff 0%, #fffdf9 100%);
 }
 
+.filter-field {
+  max-width: 280px;
+  margin-bottom: 18px;
+}
+
 .empty-state {
   margin: 0;
   padding: 18px;
@@ -206,6 +211,7 @@ select:focus {
 .client-card-info {
   display: grid;
   gap: 10px;
+  margin-bottom: 16px;
 }
 
 .client-card-row {
@@ -224,6 +230,25 @@ select:focus {
 .client-card-value {
   margin: 0;
   line-height: 1.5;
+}
+
+.whatsapp-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 16px;
+  color: #ffffff;
+  font-weight: 700;
+  text-decoration: none;
+  background: #1d9f5a;
+  border-radius: 12px;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.whatsapp-button:hover,
+.whatsapp-button:focus-visible {
+  background: #167c45;
+  transform: translateY(-1px);
 }
 
 @media (max-width: 720px) {
