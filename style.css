@@ -172,6 +172,60 @@ select:focus {
   margin-top: 18px;
 }
 
+.client-card {
+  padding: 18px;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 10px 24px rgba(31, 41, 55, 0.06);
+}
+
+.client-card-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.client-card-title {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.client-card-status {
+  padding: 6px 10px;
+  color: var(--accent-dark);
+  background: #e8f3ef;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.client-card-info {
+  display: grid;
+  gap: 10px;
+}
+
+.client-card-row {
+  display: grid;
+  gap: 4px;
+}
+
+.client-card-label {
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.client-card-value {
+  margin: 0;
+  line-height: 1.5;
+}
+
 @media (max-width: 720px) {
   .page {
     width: min(100% - 20px, 1040px);
@@ -188,5 +242,9 @@ select:focus {
 
   .submit-button {
     width: 100%;
+  }
+
+  .client-card-header {
+    flex-direction: column;
   }
 }
