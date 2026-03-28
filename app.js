@@ -3,6 +3,9 @@ const STORAGE_KEY = "retorno-facil-clientes";
 const form = document.querySelector("#client-form");
 const clientList = document.querySelector("#client-list");
 const emptyState = document.querySelector("#empty-state");
+const statusFilter = document.querySelector("#status-filter");
+
+let clients = loadClients();
 
 function loadClients() {
   const storedClients = window.localStorage.getItem(STORAGE_KEY);
@@ -20,8 +23,8 @@ function loadClients() {
   }
 }
 
-function saveClients(clients) {
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(clients));
+function saveClients(updatedClients) {
+  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedClients));
 }
 
 function formatStatus(status) {
@@ -50,12 +53,26 @@ function formatDate(date) {
 }
 
 function escapeHtml(value) {
-  return value
+  return String(value)
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
+}
+
+function normalizeWhatsappPhone(phone) {
+  const digits = String(phone).replace(/\D/g, "").replace(/^0+/, "");
+
+  if (!digits) {
+    return "";
+  }
+
+  if (digits.startsWith("55")) {
+    return digits;
+  }
+
+  return `55${digits}`;
 }
 
 function createInfoRow(label, value) {
@@ -67,21 +84,73 @@ function createInfoRow(label, value) {
   `;
 }
 
-function renderClients(clients) {
+function getCurrentFilter() {
+  if (!statusFilter) {
+    return "todos";
+  }
+
+  return statusFilter.value;
+}
+
+function filterClientsByStatus(allClients, filter) {
+  if (filter === "todos") {
+    return allClients;
+  }
+
+  return allClients.filter((client) => client.status === filter);
+}
+
+function getEmptyStateMessage(filter) {
+  if (filter === "todos") {
+    return "Ainda nao ha clientes cadastrados.";
+  }
+
+  return "Nenhum cliente encontrado para o filtro selecionado.";
+}
+
+function createWhatsappLink(phone) {
+  const normalizedPhone = normalizeWhatsappPhone(phone);
+
+  if (!normalizedPhone) {
+    return "";
+  }
+
+  return `https://wa.me/${normalizedPhone}`;
+}
+
+function renderClients() {
   if (!clientList || !emptyState) {
     return;
   }
 
-  if (clients.length === 0) {
+  const currentFilter = getCurrentFilter();
+  const visibleClients = filterClientsByStatus(clients, currentFilter);
+
+  if (visibleClients.length === 0) {
     clientList.innerHTML = "";
+    emptyState.textContent = getEmptyStateMessage(currentFilter);
     emptyState.classList.remove("is-hidden");
     return;
   }
 
   emptyState.classList.add("is-hidden");
 
-  clientList.innerHTML = clients
+  clientList.innerHTML = visibleClients
     .map((client) => {
+      const whatsappLink = createWhatsappLink(client.phone);
+      const whatsappButton = whatsappLink
+        ? `
+          <a
+            class="whatsapp-button"
+            href="${whatsappLink}"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Abrir no WhatsApp
+          </a>
+        `
+        : "";
+
       return `
         <article class="client-card">
           <div class="client-card-header">
@@ -93,6 +162,7 @@ function renderClients(clients) {
             ${createInfoRow("Observacao", client.notes)}
             ${createInfoRow("Proximo retorno", formatDate(client.returnDate))}
           </div>
+          ${whatsappButton}
         </article>
       `;
     })
@@ -123,11 +193,9 @@ function resetForm() {
   form.reset();
 }
 
+renderClients();
+
 if (form) {
-  let clients = loadClients();
-
-  renderClients(clients);
-
   form.addEventListener("submit", (event) => {
     event.preventDefault();
 
@@ -139,7 +207,13 @@ if (form) {
 
     clients = [newClient, ...clients];
     saveClients(clients);
-    renderClients(clients);
+    renderClients();
     resetForm();
+  });
+}
+
+if (statusFilter) {
+  statusFilter.addEventListener("change", () => {
+    renderClients();
   });
 }
