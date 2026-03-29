@@ -12,6 +12,8 @@ const totalClientsValue = document.querySelector("#metric-total-clientes");
 const waitingReturnValue = document.querySelector("#metric-aguardando-retorno");
 const completedValue = document.querySelector("#metric-concluidos");
 const overdueReturnsValue = document.querySelector("#metric-retornos-atrasados");
+const todayReminders = document.querySelector("#today-reminders");
+const overdueReminders = document.querySelector("#overdue-reminders");
 
 let editingClientId = null;
 let clients = ensureClientIds(loadClients());
@@ -302,6 +304,72 @@ function renderMetrics() {
   }
 }
 
+function getReminderClients(alertType) {
+  return sortClients(
+    clients.filter((client) => getClientAlertType(client) === alertType),
+    "retorno-mais-proximo"
+  );
+}
+
+function createReminderItem(client, alertType) {
+  const whatsappLink = createWhatsappLink(client.phone);
+  const whatsappButton = whatsappLink
+    ? `
+      <a
+        class="whatsapp-button"
+        href="${whatsappLink}"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        WhatsApp
+      </a>
+    `
+    : "";
+
+  return `
+    <article class="reminder-item reminder-item--${alertType}">
+      <h3 class="reminder-title">${escapeHtml(client.name)}</h3>
+      <div class="reminder-meta">
+        <p class="reminder-line"><strong>Telefone:</strong> ${escapeHtml(client.phone)}</p>
+        <p class="reminder-line"><strong>Status:</strong> ${escapeHtml(formatStatus(client.status))}</p>
+        <p class="reminder-line"><strong>Próximo retorno:</strong> ${escapeHtml(formatDate(client.returnDate))}</p>
+      </div>
+      ${whatsappButton}
+    </article>
+  `;
+}
+
+function renderReminderList(container, clientsToRender, alertType, emptyMessage) {
+  if (!container) {
+    return;
+  }
+
+  if (clientsToRender.length === 0) {
+    container.innerHTML = `<p class="reminder-empty">${emptyMessage}</p>`;
+    return;
+  }
+
+  container.innerHTML = clientsToRender
+    .map((client) => createReminderItem(client, alertType))
+    .join("");
+}
+
+function renderReminders() {
+  renderReminderList(
+    todayReminders,
+    getReminderClients("hoje"),
+    "today",
+    "Nenhum retorno previsto para hoje."
+  );
+
+  renderReminderList(
+    overdueReminders,
+    getReminderClients("atrasado"),
+    "overdue",
+    "Nenhum retorno atrasado no momento."
+  );
+}
+
 function getEmptyStateMessage() {
   if (clients.length === 0) {
     return "Ainda nao ha clientes cadastrados.";
@@ -475,6 +543,7 @@ function renderClients() {
 
 function renderApp() {
   renderMetrics();
+  renderReminders();
   renderClients();
 }
 
